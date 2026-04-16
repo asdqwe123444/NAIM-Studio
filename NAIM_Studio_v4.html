@@ -1327,7 +1327,9 @@ img {
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <button id="pwaPowerBtn" style="display:none;font-size:16px;padding:4px 8px;flex-shrink:0;line-height:1;align-items:center;justify-content:center;color:var(--t2);" class="btn btn-ghost btn-sm" onclick="history.back()" title="닫기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.4 6.4a9 9 0 1 0 11.2 0"/></svg></button>
+      <div id="pwaPowerWrap" style="display:none;align-items:center;">
+        <button id="pwaPowerBtn" style="font-size:16px;padding:4px 8px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);" class="btn btn-ghost btn-sm" onclick="history.back()" title="닫기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.4 6.4a9 9 0 1 0 11.2 0"/></svg></button>
+      </div>
     </div>
     <script>
     (function(){
@@ -1337,8 +1339,8 @@ img {
         if(wrap) wrap.style.display='none';
         var t = document.getElementById('fullscreenToggle');
         if(t && !t.checked){ t.checked=true; setFullscreen(true); }
-        var pb = document.getElementById('pwaPowerBtn');
-        if(pb) pb.style.display='inline-flex';
+        var pw = document.getElementById('pwaPowerWrap');
+        if(pw) pw.style.display='flex';
       }
     })();
     </script>
