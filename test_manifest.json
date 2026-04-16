@@ -1,8 +1,0 @@
-{
-  "name": "Exit Test",
-  "short_name": "ExitTest",
-  "display": "fullscreen",
-  "background_color": "#07070f",
-  "theme_color": "#07070f",
-  "start_url": "./pwa_exit_test.html"
-}
