@@ -163,8 +163,8 @@ input[type=number]{-moz-appearance:textfield;}
 #useCoordBtn{height:32px;line-height:1;white-space:nowrap;}
 #hideBtn{min-width:52px;text-align:center;box-sizing:border-box;}
 /* POS GRID */
-#posGrid{position:fixed;z-index:9500;background:var(--panel);border:1px solid var(--t3);border-radius:8px;overflow:hidden;display:none;flex-direction:column;gap:0;box-shadow:0 8px 32px rgba(0,0,0,.9);}
-#posGrid.open{display:flex;}
+#posGrid{position:fixed;z-index:9500;background:var(--panel);border:1px solid var(--t3);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;gap:0;box-shadow:0 8px 32px rgba(0,0,0,.9);opacity:0;pointer-events:none;transition:opacity .15s;}
+#posGrid.open{opacity:1;pointer-events:all;}
 .pos-grid-title{font-size:11px;letter-spacing:.12em;color:var(--t2);text-align:center;font-weight:600;}
 .pos-grid-cells{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
 .pos-cell{width:48px;height:48px;background:var(--card);border:2px solid var(--b2);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--t3);transition:all .15s;}
