@@ -1337,9 +1337,9 @@ img {
         </label>
       </div>
       <div id="pwaPowerWrap" style="display:none;align-items:center;">
-        <button style="font-size:11px;padding:4px 6px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);background:#3e3e70;border:none;border-radius:4px;cursor:pointer;" onclick="window.close()">①close</button>
-        <button style="font-size:11px;padding:4px 6px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);background:#3e3e70;border:none;border-radius:4px;cursor:pointer;" onclick="history.back()">②back</button>
-        <button style="font-size:11px;padding:4px 6px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);background:#3e3e70;border:none;border-radius:4px;cursor:pointer;" onclick="history.go(-history.length)">③go</button>
+        <button style="font-size:11px;padding:4px 6px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);background:#3e3e70;border:none;border-radius:4px;cursor:pointer;" onclick="toast('①close 시도');window.close()">①close</button>
+        <button style="font-size:11px;padding:4px 6px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);background:#3e3e70;border:none;border-radius:4px;cursor:pointer;" onclick="toast('②back 시도');history.back()">②back</button>
+        <button style="font-size:11px;padding:4px 6px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;color:var(--t2);background:#3e3e70;border:none;border-radius:4px;cursor:pointer;" onclick="toast('③go 시도');history.go(-history.length)">③go</button>
       </div>
     </div>
     <script>
