@@ -1327,11 +1327,11 @@ img {
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <button id="pwaPowerBtn" style="display:none;" class="btn btn-ghost btn-sm" onclick="history.back()" title="닫기" style="font-size:16px;padding:4px 8px;flex-shrink:0;line-height:1;display:none;align-items:center;justify-content:center;color:var(--t2);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.4 6.4a9 9 0 1 0 11.2 0"/></svg></button>
+      <button id="pwaPowerBtn" style="display:none;font-size:16px;padding:4px 8px;flex-shrink:0;line-height:1;align-items:center;justify-content:center;color:var(--t2);" class="btn btn-ghost btn-sm" onclick="history.back()" title="닫기"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.4 6.4a9 9 0 1 0 11.2 0"/></svg></button>
     </div>
     <script>
     (function(){
-      var isPWA = window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches;
+      var isPWA = window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
       if(isPWA){
         var wrap = document.getElementById('fullscreenToggleWrap');
         if(wrap) wrap.style.display='none';
