@@ -1320,17 +1320,27 @@ img {
   <!-- 전체화면 + 설정 -->
   <div id="topbar-right" style="display:flex;align-items:center;gap:6px;padding:0 10px;flex-shrink:0;">
     <div class="mob-only" style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
-      <span style="font-size:9px;letter-spacing:.08em;color:var(--t3);white-space:nowrap;">FULL</span>
-      <label class="toggle-switch" title="전체화면" style="flex-shrink:0;">
-        <input type="checkbox" id="fullscreenToggle" onchange="setFullscreen(this.checked)">
-        <span class="toggle-slider"></span>
-      </label>
+      <div id="fullscreenToggleWrap" style="display:flex;align-items:center;gap:5px;">
+        <span style="font-size:9px;letter-spacing:.08em;color:var(--t3);white-space:nowrap;">FULL</span>
+        <label class="toggle-switch" title="전체화면" style="flex-shrink:0;">
+          <input type="checkbox" id="fullscreenToggle" onchange="setFullscreen(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <button id="pwaPowerBtn" style="display:none;" class="btn btn-ghost btn-sm" onclick="history.back()" title="닫기" style="font-size:16px;padding:4px 8px;flex-shrink:0;line-height:1;display:none;align-items:center;justify-content:center;color:var(--t2);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.4 6.4a9 9 0 1 0 11.2 0"/></svg></button>
     </div>
     <script>
-    if(window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches){
-      const t = document.getElementById('fullscreenToggle');
-      if(t && !t.checked){ t.checked = true; setFullscreen(true); }
-    }
+    (function(){
+      var isPWA = window.matchMedia('(display-mode: fullscreen)').matches || window.matchMedia('(display-mode: standalone)').matches;
+      if(isPWA){
+        var wrap = document.getElementById('fullscreenToggleWrap');
+        if(wrap) wrap.style.display='none';
+        var t = document.getElementById('fullscreenToggle');
+        if(t && !t.checked){ t.checked=true; setFullscreen(true); }
+        var pb = document.getElementById('pwaPowerBtn');
+        if(pb) pb.style.display='inline-flex';
+      }
+    })();
     </script>
     <button class="btn btn-ghost btn-sm" onclick="toggleConfigPanel()" id="configBtn" style="font-size:16px;padding:4px 8px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;justify-content:center;"><span style="position:relative;top:2px;">⚙</span></button>
   </div>
@@ -1830,7 +1840,7 @@ img {
   <div id="exifModalBox" onclick="event.stopPropagation()">
     <div id="exifModalHdr">
       <span>📎 EXIF IMPORT</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeExifModal()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeExifModal()">✕</button>
     </div>
     <div id="exifModalBody">
       <div class="exif-modal-section">
@@ -1914,7 +1924,7 @@ img {
 <div id="lightbox" onclick="closeLightbox()">
   <div id="lb-prev-zone" onclick="event.stopPropagation();lbMove(-1)"></div>
   <div id="lb-next-zone" onclick="event.stopPropagation();lbMove(1)"></div>
-  <button id="lb-close-btn" onclick="event.stopPropagation();closeLightbox()" style="position:fixed;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.7);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;z-index:9010;">⏻</button>
+  <button id="lb-close-btn" onclick="event.stopPropagation();closeLightbox()" style="position:fixed;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.7);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;z-index:9010;">✕</button>
   <img id="lbImg" src="" onclick="event.stopPropagation()">
   <div id="lb-toolbar">
     <button class="btn btn-ghost btn-sm" id="lb-select-btn" onclick="event.stopPropagation();lbToggleSelect()">☐ 선택</button>
@@ -1966,7 +1976,7 @@ img {
 <div id="posGrid">
   <div id="posGridHdr" style="padding:8px 12px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:8px 8px 0 0;cursor:grab;">
     <span class="pos-grid-title" style="margin:0;">📍 캐릭터 위치 선택</span>
-    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('posGrid').classList.remove('open')" style="font-size:12px;padding:2px 6px;">⏻</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('posGrid').classList.remove('open')" style="font-size:12px;padding:2px 6px;">✕</button>
   </div>
   <div style="padding:12px;display:flex;flex-direction:column;gap:8px;">
     <div class="pos-grid-cells" id="posGridCells"></div>
@@ -2016,7 +2026,7 @@ img {
         <button class="btn btn-ghost btn-sm" id="taModalUndoBtnHdr" onclick="taModalUndo()" style="font-size:24px;padding:0 4px;line-height:1;display:inline-flex;align-items:center;justify-content:center;pointer-events:none;color:var(--b3);" title="되돌리기">↩</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleTaFontPanel()" style="font-size:11px;padding:3px 8px;">폰트</button>
         <button class="btn btn-ghost btn-sm" onclick="if(!document.getElementById('taModalTa').value.trim())return;if(_confirmDelete){showConfirm('내용을 지우시겠습니까?',()=>{document.getElementById('taModalTa').value='';if(_taModalTarget){_taModalTarget.value='';_taModalTarget.dispatchEvent(new Event('input'));saveSettings();}});}else{document.getElementById('taModalTa').value='';if(_taModalTarget){_taModalTarget.value='';_taModalTarget.dispatchEvent(new Event('input'));saveSettings();}}" style="font-size:15px;padding:3px 7px;line-height:1;" title="내용 지우기">🗑</button>
-        <button class="btn btn-ghost btn-sm" onclick="closeTaModal()">⏻</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeTaModal()">✕</button>
       </div>
     </div>
     <div id="taFontPanel">
@@ -2052,7 +2062,7 @@ img {
         <button class="btn btn-ghost btn-sm" id="styleEditDownBtn" onclick="styleEditMove(1)" style="display:none;padding:3px 7px;font-size:12px;" title="아래로">▼</button>
         <button class="btn btn-ghost btn-sm" id="styleEditBtn" onclick="toggleStyleEditMode()" style="padding:3px 7px;font-size:13px;" title="정렬">🔧</button>
         <button class="btn btn-acc btn-sm" onclick="toggleStyleAddPanel()" id="styleAddToggleBtn" style="font-size:11px;padding:3px 10px;">＋ 추가</button>
-        <button class="btn btn-ghost btn-sm" onclick="closeStyleModal()">⏻</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeStyleModal()">✕</button>
       </div>
     </div>
     <!-- 추가 패널 (기본 숨김) -->
@@ -2085,7 +2095,7 @@ img {
 
 <!-- 그림체 이미지 뷰어 -->
 <div id="styleImgViewer" onclick="closeStyleImgViewer()">
-  <button onclick="event.stopPropagation();closeStyleImgViewer()" style="position:fixed;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.7);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;z-index:9510;">⏻</button>
+  <button onclick="event.stopPropagation();closeStyleImgViewer()" style="position:fixed;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.7);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;z-index:9510;">✕</button>
   <img id="styleImgViewerImg" src="" onclick="event.stopPropagation()">
   <div id="styleImgViewerNav" onclick="event.stopPropagation()">
     <button class="btn btn-ghost btn-sm" onclick="styleImgNav(-1)">← 이전</button>
@@ -2103,7 +2113,7 @@ img {
         <button class="btn btn-ghost btn-sm" id="presetSortUpBtn" onclick="presetSortMove(-1)" style="display:none;padding:3px 7px;font-size:12px;" title="위로">▲</button>
         <button class="btn btn-ghost btn-sm" id="presetSortDownBtn" onclick="presetSortMove(1)" style="display:none;padding:3px 7px;font-size:12px;" title="아래로">▼</button>
         <button class="btn btn-ghost btn-sm" id="presetEditBtn" onclick="togglePresetEditMode()" style="padding:3px 7px;font-size:13px;" title="정렬">🔧</button>
-        <button class="btn btn-ghost btn-sm" onclick="closePresetModal()">⏻</button>
+        <button class="btn btn-ghost btn-sm" onclick="closePresetModal()">✕</button>
       </div>
     </div>
     <div id="presetList"></div>
@@ -2131,7 +2141,7 @@ img {
             <span class="toggle-slider"></span>
           </label>
         </label>
-        <button class="btn btn-ghost btn-sm" onclick="closeSessionModal()">⏻</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeSessionModal()">✕</button>
       </div>
     </div>
     <!-- 내보내기 모드 전용 버튼 바 -->
@@ -2148,7 +2158,7 @@ img {
   <div id="sesExportModalBox">
     <div id="sesExportHdr">
       <span style="font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--t2);">📦 히스토리 선택 내보내기</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeSesExportModal()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeSesExportModal()">✕</button>
     </div>
     <div style="padding:8px 14px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;flex-shrink:0;">
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--t2);">
@@ -2176,7 +2186,7 @@ img {
         <button class="btn btn-ghost btn-sm" id="cpEditDownBtn" onclick="cpEditMove(1)" style="display:none;padding:3px 7px;font-size:12px;" title="아래로">▼</button>
         <button class="btn btn-ghost btn-sm" id="cpEditBtn" onclick="toggleCpEditMode()" style="padding:3px 7px;font-size:13px;" title="정렬">🔧</button>
         <button class="btn btn-acc btn-sm" id="cpAddBtn" onclick="openCpAddModal()" style="font-size:11px;padding:3px 12px;letter-spacing:.05em;">＋ 추가</button>
-        <button class="btn btn-ghost btn-sm" onclick="closeCharPresetModal()">⏻</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeCharPresetModal()">✕</button>
       </div>
     </div>
 
@@ -2216,7 +2226,7 @@ img {
   <div id="soloPresetModalBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;width:min(540px,94vw);height:80vh;overflow:hidden;display:flex;flex-direction:column;">
     <div id="soloPresetHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <span style="font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--t2);">⭐ 슬롯 프롬프트</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeSoloPresetModal()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeSoloPresetModal()">✕</button>
     </div>
     <div style="padding:6px 8px;border-bottom:1px solid var(--b1);flex-shrink:0;">
       <input class="inp" id="soloPresetSearchInp" type="text" placeholder="🔍 이름으로 검색…" style="width:100%;font-size:12px;" autocomplete="off" oninput="soloPresetSearchFilter(this.value)">
@@ -2236,7 +2246,7 @@ img {
     <!-- 헤더 -->
     <div id="cpAddModalHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
       <span id="cpAddModalTitle" style="font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--t2);">＋ 추가</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeCpAddModal()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeCpAddModal()">✕</button>
     </div>
 
     <!-- 스크롤 바디 -->
@@ -2250,7 +2260,7 @@ img {
           <span id="cpAddThumbIcon" style="font-size:36px;">🖼</span>
           <span style="font-size:10px;letter-spacing:.08em;" id="cpAddThumbHint">클릭하여 이미지 추가</span>
           <button id="cpAddThumbClr" onclick="event.stopPropagation();cpAddClearThumb()"
-            style="display:none;position:absolute;top:-8px;right:-8px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;align-items:center;justify-content:center;line-height:1;">⏻</button>
+            style="display:none;position:absolute;top:-8px;right:-8px;background:var(--red);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;align-items:center;justify-content:center;line-height:1;">✕</button>
         </div>
         <div style="display:flex;gap:7px;">
           <button class="btn btn-ghost btn-sm" onclick="cpAddThumbGallery()" style="font-size:11px;">🖼 갤러리에서</button>
@@ -2292,7 +2302,7 @@ img {
 
 <!-- 썸네일 확대 뷰어 -->
 <div id="cpThumbViewer" onclick="closeCpThumbViewer()">
-  <button onclick="event.stopPropagation();closeCpThumbViewer()" style="position:fixed;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.7);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;z-index:9010;">⏻</button>
+  <button onclick="event.stopPropagation();closeCpThumbViewer()" style="position:fixed;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.7);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px;z-index:9010;">✕</button>
   <img id="cpThumbViewerImg" src="" onclick="event.stopPropagation()">
 </div>
 
@@ -2301,7 +2311,7 @@ img {
   <div id="cpGalleryPickerBox">
     <div id="cpGalleryPickerHdr">
       <span style="font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--t2);">🖼 갤러리에서 썸네일 선택</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeCpGalleryPicker()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeCpGalleryPicker()">✕</button>
     </div>
     <div id="cpGalleryPickerGrid"></div>
   </div>
@@ -2326,7 +2336,7 @@ img {
   <div id="charStatusBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;min-width:280px;max-height:calc(90vh - var(--mob-bars-h,0px));overflow:hidden;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
     <div id="charStatusHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:6px 6px 0 0;">
       <span style="font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t2);">👤 캐릭터 프리셋</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeQCharsStatusModal()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeQCharsStatusModal()">✕</button>
     </div>
     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;">
       <div id="charStatusGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
@@ -2340,7 +2350,7 @@ img {
   <div id="outfitStatusBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;min-width:280px;max-height:calc(90vh - var(--mob-bars-h,0px));overflow:hidden;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
     <div id="outfitStatusHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:6px 6px 0 0;">
       <span style="font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t2);">👗 의상 프리셋</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeQOutfitsStatusModal()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeQOutfitsStatusModal()">✕</button>
     </div>
     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;">
       <div id="outfitStatusGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
@@ -2354,7 +2364,7 @@ img {
   <div id="outfitSlotPickerBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;min-width:280px;max-height:calc(90vh - var(--mob-bars-h,0px));overflow:hidden;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
     <div id="outfitSlotPickerHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:6px 6px 0 0;">
       <span id="outfitSlotMsg" style="font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t2);"></span>
-      <button class="btn btn-ghost btn-sm" onclick="closeQOutfitsSlotPicker()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeQOutfitsSlotPicker()">✕</button>
     </div>
     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;">
       <div id="outfitSlotGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
@@ -2369,7 +2379,7 @@ img {
   <div id="charSlotPickerBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;min-width:280px;max-height:calc(90vh - var(--mob-bars-h,0px));overflow:hidden;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
     <div id="charSlotPickerHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:6px 6px 0 0;">
       <span id="charSlotMsg" style="font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t2);"></span>
-      <button class="btn btn-ghost btn-sm" onclick="closeQCharsSlotPicker()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeQCharsSlotPicker()">✕</button>
     </div>
     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;">
       <div id="charSlotGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
@@ -2384,7 +2394,7 @@ img {
   <div id="multiSlotPickerBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;min-width:280px;max-height:calc(90vh - var(--mob-bars-h,0px));overflow:hidden;display:flex;flex-direction:column;" onclick="event.stopPropagation()">
     <div id="multiSlotPickerHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-radius:6px 6px 0 0;">
       <span id="multiSlotMsg" style="font-size:12px;font-weight:600;letter-spacing:.1em;color:var(--t2);"></span>
-      <button class="btn btn-ghost btn-sm" onclick="closeMultiSlotPicker()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeMultiSlotPicker()">✕</button>
     </div>
     <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;flex:1;">
       <div style="font-size:10px;color:var(--t3);text-align:center;" id="multiSlotHint"></div>
@@ -2409,7 +2419,7 @@ img {
 <div id="delayPanel" style="position:fixed;z-index:8500;background:var(--panel);border:1px solid var(--t3);border-radius:6px;padding:16px;width:270px;display:none;box-shadow:0 8px 28px rgba(0,0,0,.9);">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
     <span style="font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--t2);">⏱ 예약 설정</span>
-    <button class="btn btn-ghost btn-sm" onclick="closeDelayPanel()" style="padding:2px 8px;">⏻</button>
+    <button class="btn btn-ghost btn-sm" onclick="closeDelayPanel()" style="padding:2px 8px;">✕</button>
   </div>
 
   <div class="sec-title">생성 딜레이</div>
@@ -2451,7 +2461,7 @@ img {
     <!-- 헤더 (고정) -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;flex-shrink:0;border-bottom:1px solid var(--b1);background:var(--panel);border-radius:8px 8px 0 0;">
       <span style="font-size:14px;font-weight:700;letter-spacing:.1em;color:var(--t1);">💾 데이터 관리</span>
-      <button class="btn btn-ghost btn-sm" onclick="closeDataManage()">⏻</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeDataManage()">✕</button>
     </div>
 
     <!-- 스크롤 영역 -->
@@ -7438,7 +7448,7 @@ function renderPresetList(){
       <div style="flex:1;min-width:0;">
         <div class="preset-name">${esc(p.name)}</div>
       </div>
-      <button class="preset-del" onclick="event.stopPropagation();deletePreset(${i})" title="삭제">⏻</button>
+      <button class="preset-del" onclick="event.stopPropagation();deletePreset(${i})" title="삭제">✕</button>
     </div>
   `).join('');
 
@@ -10290,10 +10300,8 @@ setTimeout(_syncResBtns, 0);
   });
 
   // ── 모바일 뒤로가기 → 열린 팝업 닫기 ──
-  history.pushState(null, '', location.href);
-  window.addEventListener('popstate', ()=>{
-    if(!isMobile()){ history.back(); return; } // PC는 기본 동작
-    history.pushState(null, '', location.href); // 스택 유지
+  function handleMobBack(pwaMode){
+    if(!isMobile()) return;
     // 열린 팝업 순서대로 닫기 (z-index 높은 순)
     const opacityModals = [
       {id:'cpAddModal',       close:()=>closeCpAddModal()},
@@ -10331,8 +10339,14 @@ setTimeout(_syncResBtns, 0);
     // 설정창
     const cfg = document.getElementById('configPanel');
     if(cfg && cfg.style.visibility === 'visible'){ closeConfigPanel(); return; }
-    // 아무 팝업 없으면 프롬프트 탭으로 이동
-    if(typeof mobNav === 'function') mobNav('prompts');
+    // 아무 팝업 없으면
+    if(!pwaMode && typeof mobNav === 'function') mobNav('prompts');
+  }
+  history.pushState(null, '', location.href);
+  window.addEventListener('popstate', ()=>{
+    if(!isMobile()){ history.back(); return; }
+    history.pushState(null, '', location.href);
+    handleMobBack();
   });
 })();
 
