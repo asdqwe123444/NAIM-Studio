@@ -1361,7 +1361,7 @@ img {
             style="flex:1;padding:9px;font-size:12px;font-weight:700;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;text-align:center;">
             📋 순차 생성
           </button>
-          <button class="btn btn-ghost" onclick="toast('와일드카드 기능은 추후 지원 예정입니다','err')"
+          <button class="btn btn-ghost" onclick="toast('미구현','err')"
             style="flex:1;padding:9px;font-size:12px;font-weight:700;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;text-align:center;">
             🃏 와일드카드
           </button>
@@ -2072,6 +2072,10 @@ img {
         <button class="btn btn-ghost btn-sm" onclick="styleImportFromBase()" style="font-size:10px;align-self:flex-start;white-space:nowrap;">📋 현재<br>가져오기</button>
       </div>
     </div>
+    <!-- 검색 -->
+    <div id="styleSearchWrap" style="padding:6px 8px;border-bottom:1px solid var(--b1);flex-shrink:0;">
+      <input class="inp" id="styleSearchInp" type="text" placeholder="🔍 이름 검색 / #프롬프트 검색" style="width:100%;font-size:12px;" autocomplete="off" oninput="styleSearchFilter(this.value)">
+    </div>
     <div id="styleList"></div>
   </div>
 </div>
@@ -2183,7 +2187,7 @@ img {
 
     <!-- 검색 -->
     <div style="padding:6px 8px;border-bottom:1px solid var(--b1);flex-shrink:0;">
-      <input class="inp" id="cpSearchInp" type="text" placeholder="🔍 이름으로 검색…" style="width:100%;font-size:12px;" autocomplete="off" oninput="cpSearchFilter(this.value)">
+      <input class="inp" id="cpSearchInp" type="text" placeholder="🔍 이름 검색 / #프롬프트 검색" style="width:100%;font-size:12px;" autocomplete="off" oninput="cpSearchFilter(this.value)">
     </div>
 
     <!-- 캐릭터 탭 -->
@@ -6677,10 +6681,26 @@ function toggleStyleAddPanel(){
   }
 }
 
+let _styleSearchQuery = '';
+let _styleSearchMode = 'name';
+function styleSearchFilter(val){
+  const raw = (val||'').trim();
+  if(raw.startsWith('#')){
+    _styleSearchMode = 'prompt';
+    _styleSearchQuery = raw.slice(1).trim().toLowerCase();
+  } else {
+    _styleSearchMode = 'name';
+    _styleSearchQuery = raw.toLowerCase();
+  }
+  renderStyleList();
+}
 function openStyleModal(){
   _styleAddPendingImgs = [];
+  _styleSearchQuery = ''; _styleSearchMode = 'name';
   document.getElementById('styleNameInp').value='';
   document.getElementById('stylePromptInp').value='';
+  const sinp = document.getElementById('styleSearchInp');
+  if(sinp) sinp.value = '';
   // 추가 패널 닫힌 상태로
   document.getElementById('styleAddPanel').style.display = 'none';
   document.getElementById('styleAddToggleBtn').textContent = '＋ 추가';
@@ -6700,13 +6720,22 @@ let _activeStylePrompt = '';
 let _activeStyleName = '';
 
 function renderStyleList(){
-  const list = getStyles();
+  const allStyles = getStyles();
+  const list = _styleSearchQuery
+    ? allStyles.filter(s=> _styleSearchMode==='prompt'
+        ? (s.prompt||'').toLowerCase().includes(_styleSearchQuery)
+        : s.name.toLowerCase().includes(_styleSearchQuery))
+    : allStyles;
   const el = document.getElementById('styleList');
-  if(!list.length){
+  if(!allStyles.length){
     el.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:20px;">저장된 그림체 없음<br><span style="font-size:10px;">아래에서 현재 프롬프트와 이미지를 저장하세요</span></div>';
     return;
   }
-  el.innerHTML = list.map((s,i)=>{
+  if(!list.length){
+    el.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:20px;">검색 결과 없음</div>';
+    return;
+  }
+  el.innerHTML = list.map((s)=>{ const i = allStyles.indexOf(s);
     const isActive = _activeStyleName === s.name;
     const isEditSel = _styleEditMode && _styleEditSel === i;
     return `
@@ -7646,7 +7675,7 @@ async function cpAddSave(){
     const snapshot = chars.map(c=>({...c, pos:{...c.pos}}));
     const preset = {name, chars:snapshot, useCoords:_useCoords, thumb:_cpAddThumbData||null};
     const list = getCharPresets();
-    if(_cpEditPresetIdx >= 0 && _cpEditPresetType === 'char') list[_cpEditPresetIdx] = preset;
+    if(_cpEditPresetIdx >= 0) list[_cpEditPresetIdx] = preset;
     else { const existing = list.findIndex(p=>p.name===name); if(existing>=0) list[existing]=preset; else list.push(preset); }
     saveCharPresets(list);
     await serverSavePreset('char', preset);
@@ -7685,12 +7714,24 @@ async function cpAddSave(){
     renderQOutfitPresetList();
   }
   closeCpAddModal();
+  // 수정 모드였으면 charPresetModal 복원
+  if(_cpEditPresetType){
+    const cpm = document.getElementById('charPresetModal');
+    if(cpm && !cpm.classList.contains('open')){
+      const tab = _cpAddTab;
+      renderCharPresetList();
+      renderQCharPresetList();
+      renderQOutfitPresetList();
+      switchCpTab(tab);
+      cpm.classList.add('open');
+    }
+  }
   toast(`"${name}" 저장됨`,'ok');
 }
 
 function switchCpTab(tab){
   _cpActiveTab = tab;
-  _cpSearchQuery = '';
+  _cpSearchQuery = ''; _cpSearchMode = 'name';
   const inp = document.getElementById('cpSearchInp');
   if(inp) inp.value = '';
   document.querySelectorAll('.cp-tab-btn').forEach(b=>b.classList.toggle('active', b.id===`cpTab-${tab}`));
@@ -7730,16 +7771,33 @@ function switchCpTab(tab){
 }
 
 let _cpSearchQuery = '';
+let _cpSearchMode = 'name'; // 'name' | 'prompt'
 function cpSearchFilter(val){
-  _cpSearchQuery = (val||'').trim().toLowerCase();
+  const raw = (val||'').trim();
+  if(raw.startsWith('#')){
+    _cpSearchMode = 'prompt';
+    _cpSearchQuery = raw.slice(1).trim().toLowerCase();
+  } else {
+    _cpSearchMode = 'name';
+    _cpSearchQuery = raw.toLowerCase();
+  }
   if(_cpActiveTab==='char') renderCharPresetList();
   else if(_cpActiveTab==='qchar') renderQCharPresetList();
   else renderQOutfitPresetList();
 }
+function _cpMatchPrompt(p, q){
+  if(!q) return true;
+  const terms = q.split(',').map(t=>t.trim()).filter(Boolean);
+  if(!terms.length) return true;
+  const text = p.text
+    ? p.text.toLowerCase()
+    : p.chars ? p.chars.map(c=>(c.prompt||'')).join(' ').toLowerCase() : '';
+  return terms.every(t=>text.includes(t));
+}
 
 function openCharPresetModal(tab, slot){
   _cpSoloSlot = (slot !== undefined) ? slot : -1;
-  _cpSearchQuery = '';
+  _cpSearchQuery = ''; _cpSearchMode = 'name';
   const inp = document.getElementById('cpSearchInp');
   if(inp) inp.value = '';
   // solo 모드: 탭바 숨김, 지정 탭으로 바로
@@ -7921,7 +7979,7 @@ function closeCpThumbViewer(){
 // ── 캐릭터 프리셋 ──
 function renderCharPresetList(){
   const allList=getCharPresets();
-  const list=_cpSearchQuery ? allList.filter(p=>p.name.toLowerCase().includes(_cpSearchQuery)) : allList;
+  const list=_cpSearchQuery ? allList.filter(p=> _cpSearchMode==='prompt' ? _cpMatchPrompt(p,_cpSearchQuery) : p.name.toLowerCase().includes(_cpSearchQuery)) : allList;
   const el=document.getElementById('charPresetList');
   if(!allList.length){
     el.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:24px;">저장된 슬롯 프롬프트 없음<br><span style="font-size:10px;">상단 ＋ 추가 버튼으로 저장하세요</span></div>';
@@ -8030,7 +8088,7 @@ function openCpEditPreset(i, type){
 
 function renderQOutfitPresetList(){
   const allList=getQOutfitPresets();
-  const list=_cpSearchQuery ? allList.filter(p=>p.name.toLowerCase().includes(_cpSearchQuery)) : allList;
+  const list=_cpSearchQuery ? allList.filter(p=> _cpSearchMode==='prompt' ? _cpMatchPrompt(p,_cpSearchQuery) : p.name.toLowerCase().includes(_cpSearchQuery)) : allList;
   const el=document.getElementById('qoutfitPresetList');
   if(!allList.length){
     el.innerHTML='<div style="font-size:11px;color:var(--t3);text-align:center;padding:24px;">저장된 의상 프리셋 없음<br><span style="font-size:10px;">상단 ＋ 추가 버튼으로 저장하세요</span></div>';
@@ -8505,7 +8563,7 @@ let _qCharsSlotPickerPreset = null;
 
 function renderQCharPresetList(){
   const allList=getQCharPresets();
-  const list=_cpSearchQuery ? allList.filter(p=>p.name.toLowerCase().includes(_cpSearchQuery)) : allList;
+  const list=_cpSearchQuery ? allList.filter(p=> _cpSearchMode==='prompt' ? _cpMatchPrompt(p,_cpSearchQuery) : p.name.toLowerCase().includes(_cpSearchQuery)) : allList;
   const el=document.getElementById('qcharPresetList');
   if(!el) return;
   if(!allList.length){
