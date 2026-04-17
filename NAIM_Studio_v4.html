@@ -435,7 +435,7 @@ input[type=checkbox]{accent-color:var(--acc);width:14px;height:14px;cursor:point
   margin-top:8px;
 }
 #portrait-prompt-resize-pill{
-  width:40px;height:4px;
+  width:36px;height:4px;
   background:var(--b3);
   border-radius:2px;
   transition:background .15s;
@@ -2124,6 +2124,7 @@ img {
             <span class="toggle-slider"></span>
           </label>
         </label>
+        <button class="btn btn-ghost btn-sm" onclick="newSessionNow()" title="새 히스토리 시작">➕ 새 히스토리</button>
         <button class="btn btn-ghost btn-sm" onclick="closeSessionModal()">✕</button>
       </div>
     </div>
@@ -9023,6 +9024,28 @@ async function openSessionModal(mode){
   modal.classList.add('open');
 }
 
+function _clearGalleryUI(){
+  // 갤러리 화면만 비우기 (DB 데이터 유지)
+  const grid = document.getElementById('gGrid');
+  if(grid){ grid.querySelectorAll('.g-item').forEach(el=>{ if(el._url) URL.revokeObjectURL(el._url); }); grid.innerHTML=''; grid.style.display='none'; }
+  const wrap = document.getElementById('gGroupsWrap');
+  if(wrap){ Array.from(wrap.querySelectorAll('.g-group:not(#g-group-0)')).forEach(g=>g.remove()); wrap.style.display='none'; }
+  const emptyG = document.getElementById('emptyG'); if(emptyG) emptyG.style.display='flex';
+  const cnt = document.getElementById('galleryCount'); if(cnt) cnt.textContent='0 이미지';
+  const mobCnt = document.getElementById('mob-galleryCount'); if(mobCnt) mobCnt.textContent='#0';
+  const mobSub = document.getElementById('mob-galleryCountSub'); if(mobSub) mobSub.textContent='0 이미지';
+  const gcnt0 = document.getElementById('g-gcnt-0'); if(gcnt0) gcnt0.textContent='0장';
+  const selAll = document.getElementById('selAllBtn'); if(selAll) selAll.style.display='none';
+  galleryCount=0; selectMode=false; updateSelUI();
+}
+function newSessionNow(){
+  showConfirm('현재 갤러리를 비우고 새 히스토리를 시작하시겠습니까?', ()=>{
+    _clearGalleryUI();
+    GDB.currentSessionId = null;
+    toast('새 히스토리 시작', 'ok');
+  });
+}
+
 function closeSessionModal(){
   const modal = document.getElementById('sessionModal');
   modal.classList.remove('open');
@@ -9061,21 +9084,7 @@ async function loadChoiceExec(){
   catch(e){ toast('세션 로드 실패: '+e.message,'err'); return; }
   if(!items.length){ toast('이미지 없음','err'); return; }
   // 기존 갤러리 비우기
-  const grid = document.getElementById('gGrid');
-  if(grid){
-    grid.querySelectorAll('.g-item').forEach(el=>{ if(el._url) URL.revokeObjectURL(el._url); });
-    grid.innerHTML = '';
-  }
-  const wrap = document.getElementById('gGroupsWrap');
-  if(wrap) wrap.style.display = 'none';
-  const emptyG = document.getElementById('emptyG');
-  if(emptyG) emptyG.style.display = '';
-  const cnt = document.getElementById('galleryCount');
-  if(cnt) cnt.textContent = '0 이미지';
-  const mobCnt = document.getElementById('mob-galleryCount');
-  if(mobCnt) mobCnt.textContent = '#0';
-  (function(){var s=document.getElementById('mob-galleryCountSub');if(s)s.textContent='0 이미지';})();
-  galleryCount = 0;
+  _clearGalleryUI();
   for(const item of items){
     const url = URL.createObjectURL(item.blob);
     const div = _addGalleryItem(item.blob, url, item.fname, item.label||'', item.prompt||'', false);
@@ -10265,7 +10274,8 @@ function isPWA(){
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 function setFullscreen(on){
-  if(isPWA()) return; // PWA는 이미 전체화면 — 변경 불가
+  // PWA는 Fullscreen API 호출 불필요 (토글 UI만 동기화)
+  if(isPWA()){ _syncFullscreenToggle(); return; }
   if(on){
     const req = document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen;
     if(req) req.call(document.documentElement).catch(()=>{
