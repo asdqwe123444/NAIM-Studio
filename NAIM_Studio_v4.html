@@ -453,7 +453,7 @@ input[type=checkbox]{accent-color:var(--acc);width:14px;height:14px;cursor:point
 #outfitPresetText{height:220px!important;max-height:220px!important;resize:none!important;}
 
 /* TEXTAREA 팝업 편집창 */
-#taModal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9700;opacity:0;pointer-events:none;transition:opacity .2s;}
+#taModal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:9950;opacity:0;pointer-events:none;transition:opacity .2s;}
 #taModal.open{opacity:1;pointer-events:all;}
 #taModalBox{background:var(--panel);border:1px solid var(--b2);border-radius:6px;width:min(900px,96vw);height:min(80vh,900px);display:flex;flex-direction:column;overflow:hidden;}
 #taModalHdr{padding:12px 18px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
@@ -1076,6 +1076,8 @@ img {
   #presetModalBox{width:100%;max-width:100vw;height:calc(88vh - var(--mob-bars-h, 110px));border-radius:14px 14px 0 0;margin-bottom:var(--mob-bars-h, 110px);}
 
 
+  #simplePresetModal{align-items:flex-end;}
+  #simplePresetModalBox{width:100%;max-width:100vw;height:calc(88vh - var(--mob-bars-h, 110px));border-radius:14px 14px 0 0;margin-bottom:var(--mob-bars-h, 110px);}
   #dataManageModal{align-items:flex-end;}
   #dataManageBox{width:100%!important;max-width:100vw!important;height:calc(88vh - var(--mob-bars-h, 110px))!important;border-radius:14px 14px 0 0!important;margin-bottom:var(--mob-bars-h, 110px)!important;}
 
@@ -2085,6 +2087,50 @@ img {
     <button class="btn btn-ghost btn-sm" onclick="styleImgNav(-1)">← 이전</button>
     <button class="btn btn-ghost btn-sm" onclick="closeStyleImgViewer()">닫기</button>
     <button class="btn btn-ghost btn-sm" onclick="styleImgNav(1)">다음 →</button>
+  </div>
+</div>
+
+<!-- 단순 프롬프트 프리셋 모달 (pos/suf/neg/cpp) -->
+<div id="simplePresetModal" onclick="if(event.target===this)closeSimplePresetModal()"
+  style="position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:9700;opacity:0;transition:opacity .15s;">
+  <div id="simplePresetModalBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:6px;width:min(500px,94vw);height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div id="simplePresetHdr" style="padding:10px 14px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span id="simplePresetTitle" style="font-size:12px;font-weight:600;letter-spacing:.12em;color:var(--t2);">⭐ 프리셋</span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button class="btn btn-ghost btn-sm" id="simplePresetUpBtn" onclick="simplePresetMove(-1)" style="display:none;padding:3px 7px;font-size:12px;" title="위로">▲</button>
+        <button class="btn btn-ghost btn-sm" id="simplePresetDownBtn" onclick="simplePresetMove(1)" style="display:none;padding:3px 7px;font-size:12px;" title="아래로">▼</button>
+        <button class="btn btn-ghost btn-sm" id="simplePresetEditBtn" onclick="toggleSimplePresetEdit()" style="font-size:13px;padding:3px 7px;" title="편집 모드">🔧</button>
+        <button class="btn btn-acc btn-sm" id="simplePresetAddOpenBtn" onclick="openSimplePresetAdd()" style="font-size:11px;padding:3px 12px;letter-spacing:.05em;">＋ 추가</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeSimplePresetModal()">✕</button>
+      </div>
+    </div>
+    <div style="padding:8px 10px;background:var(--card);border-bottom:1px solid var(--b1);flex-shrink:0;">
+      <input class="inp" id="simplePresetSearchInp" type="text" placeholder="🔍 이름 검색 / #프롬프트 검색" style="width:100%;font-size:12px;" autocomplete="off" oninput="simplePresetSearchFilter(this.value)">
+    </div>
+    <div id="simplePresetList" style="overflow-y:auto;flex:1;min-height:0;padding:8px;"></div>
+  </div>
+</div>
+
+<!-- 단순 프리셋 추가/편집 모달 -->
+<div id="simplePresetAddModal" onclick="if(event.target===this)closeSimplePresetAdd()"
+  style="position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:9900;opacity:0;pointer-events:none;transition:opacity .2s;">
+  <div id="simplePresetAddBox" style="background:var(--panel);border:1px solid var(--b2);border-radius:8px;width:min(400px,92vw);display:flex;flex-direction:column;overflow:hidden;max-height:92vh;">
+    <div id="simplePresetAddHdr" style="padding:10px 16px;background:var(--card2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span id="simplePresetAddTitle" style="font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--t2);">＋ 프리셋 추가</span>
+      <button class="btn btn-ghost btn-sm" onclick="closeSimplePresetAdd()">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+      <input class="inp" type="text" id="simplePresetAddNameInp" placeholder="이름 입력…" style="font-size:12px;" autocomplete="off">
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-ghost btn-sm" id="simplePresetImportCurBtn" onclick="simplePresetImportCurrent()" style="flex:1;font-size:11px;">📋 현재 입력창에서 가져오기</button>
+        <button class="btn btn-ghost btn-sm" id="simplePresetImportSlotBtn" onclick="simplePresetImportFromSlot()" style="flex:1;font-size:11px;display:none;">👤 캐릭터 슬롯에서 가져오기</button>
+      </div>
+      <textarea class="ta" id="simplePresetAddPrompt" data-no-expand="1" style="height:220px;max-height:220px;resize:none;" placeholder="프롬프트 입력…"></textarea>
+      <div style="display:flex;gap:7px;">
+        <button id="simplePresetAddDelBtn" class="btn btn-red btn-sm" onclick="simplePresetAddDelete()" style="padding:5px 12px;font-size:12px;display:none;">삭제</button>
+        <button class="btn btn-acc btn-sm" onclick="simplePresetAddSave()" style="padding:5px 16px;font-size:12px;margin-left:auto;">저장</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -7108,8 +7154,358 @@ function closeOverwriteDlg(){
   document.getElementById('overwriteDlg').classList.remove('open');
 }
 
+// ─────────────── 단순 프롬프트 프리셋 (pos/suf/neg/cpp) ───────────────
+// 4종류 프리셋, 텍스트만 저장. localStorage 키 — nai_simple_{type}
+const SIMPLE_PRESET_TYPES = {
+  pos: {label:'⭐ 기본 프롬프트',    key:'nai_simple_pos', target:'basePrompt'},
+  suf: {label:'⭐ 후행 프롬프트',    key:'nai_simple_suf', target:'addPrompt'},
+  neg: {label:'⭐ 네거티브',         key:'nai_simple_neg', target:'negPrompt'},
+  cpp: {label:'⭐ 캐릭터 프롬프트',  key:'nai_simple_cpp', target:null /* 슬롯 픽 */}
+};
+let _simpleCurrentType = null;
+let _simpleSearchQuery = '';
+let _simpleSearchMode = 'name';
+let _simpleEditMode = false;
+let _simpleEditSel = -1;  // 편집 모드에서 이동할 카드 선택
+
+function _getSimplePresets(type){
+  try{ return JSON.parse(localStorage.getItem(SIMPLE_PRESET_TYPES[type].key))||[]; }
+  catch{ return []; }
+}
+function _saveSimplePresets(type, list){
+  try{ localStorage.setItem(SIMPLE_PRESET_TYPES[type].key, JSON.stringify(list)); }catch{}
+}
+
 function openPresetModal(type){
-  // 기능 비활성화 — 버튼/함수 유지용 no-op (나중에 기능 복구 시 이 함수 내용 복원)
+  if(!SIMPLE_PRESET_TYPES[type]) return;
+  _simpleCurrentType = type;
+  _simpleSearchQuery = '';
+  _simpleSearchMode = 'name';
+  _simpleEditMode = false;
+  _simpleEditSel = -1;
+  const info = SIMPLE_PRESET_TYPES[type];
+  document.getElementById('simplePresetTitle').textContent = info.label;
+  const inp = document.getElementById('simplePresetSearchInp');
+  if(inp) inp.value = '';
+  const editBtn = document.getElementById('simplePresetEditBtn');
+  if(editBtn) editBtn.style.color = '';
+  // 편집 상태 버튼 초기화
+  const up = document.getElementById('simplePresetUpBtn');
+  const down = document.getElementById('simplePresetDownBtn');
+  const add = document.getElementById('simplePresetAddOpenBtn');
+  if(up)   up.style.display   = 'none';
+  if(down) down.style.display = 'none';
+  if(add)  add.style.display  = '';
+  renderSimplePresetList();
+  const m = document.getElementById('simplePresetModal');
+  m.style.display = 'flex';
+  requestAnimationFrame(()=>{ m.style.opacity = '1'; });
+}
+function closeSimplePresetModal(){
+  const m = document.getElementById('simplePresetModal');
+  m.style.display = 'none';
+  _simpleCurrentType = null;
+}
+
+function simplePresetSearchFilter(val){
+  const raw = (val||'').trim();
+  if(raw.startsWith('#')){
+    _simpleSearchMode = 'prompt';
+    _simpleSearchQuery = raw.slice(1).trim().toLowerCase();
+  } else {
+    _simpleSearchMode = 'name';
+    _simpleSearchQuery = raw.toLowerCase();
+  }
+  renderSimplePresetList();
+}
+
+function toggleSimplePresetEdit(){
+  _simpleEditMode = !_simpleEditMode;
+  _simpleEditSel = -1;
+  const btn = document.getElementById('simplePresetEditBtn');
+  if(btn) btn.style.color = _simpleEditMode ? 'var(--acc)' : '';
+  // 편집 모드: 위/아래 버튼 표시, 추가 버튼 숨김
+  const up = document.getElementById('simplePresetUpBtn');
+  const down = document.getElementById('simplePresetDownBtn');
+  const add = document.getElementById('simplePresetAddOpenBtn');
+  if(up)   up.style.display   = _simpleEditMode ? '' : 'none';
+  if(down) down.style.display = _simpleEditMode ? '' : 'none';
+  if(add)  add.style.display  = _simpleEditMode ? 'none' : '';
+  renderSimplePresetList();
+}
+
+function simplePresetSelectCard(idx){
+  if(!_simpleEditMode) return;
+  _simpleEditSel = (_simpleEditSel === idx) ? -1 : idx;
+  renderSimplePresetList();
+}
+
+function simplePresetMove(dir){
+  if(!_simpleEditMode || _simpleEditSel < 0 || !_simpleCurrentType){
+    toast('먼저 카드를 선택하세요', 'err'); return;
+  }
+  const list = _getSimplePresets(_simpleCurrentType);
+  const newIdx = _simpleEditSel + dir;
+  if(newIdx < 0 || newIdx >= list.length) return;
+  [list[_simpleEditSel], list[newIdx]] = [list[newIdx], list[_simpleEditSel]];
+  _saveSimplePresets(_simpleCurrentType, list);
+  _simpleEditSel = newIdx;
+  renderSimplePresetList();
+}
+
+function renderSimplePresetList(){
+  const el = document.getElementById('simplePresetList');
+  if(!el || !_simpleCurrentType) return;
+  const list = _getSimplePresets(_simpleCurrentType);
+  const q = _simpleSearchQuery;
+  const filtered = list.map((p, idx)=>({p, idx})).filter(({p})=>{
+    if(!q) return true;
+    if(_simpleSearchMode === 'prompt'){
+      const terms = q.split(',').map(s=>s.trim()).filter(Boolean);
+      const hay = (p.prompt||'').toLowerCase();
+      return terms.every(t=>hay.includes(t));
+    }
+    return (p.name||'').toLowerCase().includes(q);
+  });
+  if(!filtered.length){
+    el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--t3);font-size:12px;">저장된 프리셋 없음</div>';
+    return;
+  }
+  const isCpp = _simpleCurrentType === 'cpp';
+  el.innerHTML = filtered.map(({p, idx})=>{
+    const promptPreview = (p.prompt||'').slice(0, 80) + ((p.prompt||'').length>80?'…':'');
+    const slotBtns = (isCpp && !_simpleEditMode) ? `
+      <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+        ${[0,1,2,3,4,5].map(i=>`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();applySimpleCppToSlot(${idx},${i})" style="font-size:10px;padding:3px 8px;flex:1;min-width:40px;">C${i+1}</button>`).join('')}
+      </div>` : '';
+    const loadBtn = (isCpp || _simpleEditMode) ? '' : `<button class="btn btn-acc btn-sm" onclick="event.stopPropagation();applySimplePreset(${idx})" style="font-size:11px;padding:4px 10px;flex-shrink:0;">불러오기</button>`;
+    const editBtn = _simpleEditMode ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openSimplePresetAdd(${idx})" style="font-size:10px;padding:3px 8px;flex-shrink:0;">수정</button>` : '';
+    const delBtn = _simpleEditMode ? `<button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteSimplePreset(${idx})" style="font-size:10px;padding:3px 8px;flex-shrink:0;">삭제</button>` : '';
+    const selected = _simpleEditMode && _simpleEditSel === idx;
+    const cardStyle = selected
+      ? 'padding:8px 10px;margin-bottom:6px;background:rgba(255,107,53,.1);border:1px solid var(--acc);border-radius:4px;cursor:pointer;'
+      : 'padding:8px 10px;margin-bottom:6px;background:var(--card);border:1px solid var(--b1);border-radius:4px;' + (_simpleEditMode?'cursor:pointer;':'');
+    const cardClick = _simpleEditMode ? `onclick="simplePresetSelectCard(${idx})"` : '';
+    return `<div class="cp-item" style="${cardStyle}" ${cardClick}>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(p.name||'이름없음')}</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(promptPreview)||'(비어있음)'}</div>
+        </div>
+        ${loadBtn}
+        ${editBtn}
+        ${delBtn}
+      </div>
+      ${slotBtns}
+    </div>`;
+  }).join('');
+}
+
+function _getCurrentPromptForType(type){
+  if(type === 'cpp') return '';
+  const tid = SIMPLE_PRESET_TYPES[type].target;
+  const ta = document.getElementById(tid);
+  return ta ? (ta.value||'') : '';
+}
+
+// 추가/편집 모달 상태
+let _simpleEditIdx = -1;  // -1 = 새로 추가, >= 0 = 수정 중
+
+function openSimplePresetAdd(idx){
+  // idx 생략 → 새로 추가, idx 지정 → 수정
+  _simpleEditIdx = (typeof idx === 'number') ? idx : -1;
+  const isCpp = _simpleCurrentType === 'cpp';
+  // 제목
+  const title = document.getElementById('simplePresetAddTitle');
+  if(title) title.textContent = _simpleEditIdx >= 0 ? '✎ 프리셋 수정' : '＋ 프리셋 추가';
+  // cpp면 슬롯 가져오기 버튼 표시
+  document.getElementById('simplePresetImportSlotBtn').style.display = isCpp ? '' : 'none';
+  // 기존 값 채우기 (수정 모드)
+  const nameInp = document.getElementById('simplePresetAddNameInp');
+  const ta = document.getElementById('simplePresetAddPrompt');
+  if(_simpleEditIdx >= 0){
+    const list = _getSimplePresets(_simpleCurrentType);
+    const p = list[_simpleEditIdx];
+    if(p){
+      nameInp.value = p.name||'';
+      ta.value = p.prompt||'';
+    }
+  } else {
+    nameInp.value = '';
+    ta.value = '';
+  }
+  // 삭제 버튼
+  document.getElementById('simplePresetAddDelBtn').style.display = _simpleEditIdx >= 0 ? '' : 'none';
+  // 모달 열기
+  const m = document.getElementById('simplePresetAddModal');
+  m.style.pointerEvents = 'all';
+  requestAnimationFrame(()=>{ m.style.opacity = '1'; });
+}
+
+function closeSimplePresetAdd(){
+  const m = document.getElementById('simplePresetAddModal');
+  m.style.opacity = '0';
+  m.style.pointerEvents = 'none';
+  _simpleEditIdx = -1;
+}
+
+function simplePresetImportCurrent(){
+  if(!_simpleCurrentType) return;
+  const ta = document.getElementById('simplePresetAddPrompt');
+  if(!ta) return;
+  if(_simpleCurrentType === 'cpp'){
+    // cpp는 이 버튼이 숨겨져 있지만 방어적으로
+    return;
+  }
+  const tid = SIMPLE_PRESET_TYPES[_simpleCurrentType].target;
+  const src = document.getElementById(tid);
+  if(!src){ toast('현재 입력창을 찾을 수 없음', 'err'); return; }
+  const val = (src.value||'').trim();
+  if(!val){ toast('입력창이 비어있습니다', 'err'); return; }
+  ta.value = val;
+  toast('가져옴', 'ok');
+}
+
+function simplePresetImportFromSlot(){
+  if(_simpleCurrentType !== 'cpp') return;
+  // 기존 slot picker 사용
+  openSlotPicker('어느 캐릭터 슬롯에서 가져올까요?', (slotIdx, hasData)=>{
+    if(!hasData){ toast(`C${slotIdx+1}에 데이터가 없습니다`,'err'); return; }
+    const prompt = (chars[slotIdx].prompt||'').trim();
+    if(!prompt){ toast(`C${slotIdx+1}에 프롬프트가 없습니다`,'err'); return; }
+    document.getElementById('simplePresetAddPrompt').value = prompt;
+    toast(`C${slotIdx+1}에서 가져옴`, 'ok');
+  });
+}
+
+function simplePresetAddSave(){
+  if(!_simpleCurrentType) return;
+  const name = (document.getElementById('simplePresetAddNameInp').value||'').trim();
+  const prompt = (document.getElementById('simplePresetAddPrompt').value||'').trim();
+  if(!name){ toast('이름을 입력하세요', 'err'); return; }
+  if(!prompt){ toast('프롬프트를 입력하세요', 'err'); return; }
+  const list = _getSimplePresets(_simpleCurrentType);
+  if(_simpleEditIdx >= 0){
+    // 수정: 이름 충돌 체크 (본인 제외)
+    const conflict = list.findIndex((p, i)=>i !== _simpleEditIdx && p.name === name);
+    if(conflict >= 0){ toast('같은 이름이 이미 존재합니다', 'err'); return; }
+    list[_simpleEditIdx] = {name, prompt};
+    _saveSimplePresets(_simpleCurrentType, list);
+    closeSimplePresetAdd();
+    renderSimplePresetList();
+    toast('수정됨', 'ok');
+  } else {
+    // 새로 추가: 이름 중복 체크
+    const existingIdx = list.findIndex(p=>p.name === name);
+    if(existingIdx >= 0){
+      showConfirm(`"${name}" 이미 존재. 덮어쓸까요?`, ()=>{
+        list[existingIdx] = {name, prompt};
+        _saveSimplePresets(_simpleCurrentType, list);
+        closeSimplePresetAdd();
+        renderSimplePresetList();
+        toast('덮어씌움', 'ok');
+      });
+    } else {
+      list.push({name, prompt});
+      _saveSimplePresets(_simpleCurrentType, list);
+      closeSimplePresetAdd();
+      renderSimplePresetList();
+      toast('저장됨', 'ok');
+    }
+  }
+}
+
+function simplePresetAddDelete(){
+  if(_simpleEditIdx < 0 || !_simpleCurrentType) return;
+  const list = _getSimplePresets(_simpleCurrentType);
+  const p = list[_simpleEditIdx];
+  if(!p) return;
+  showConfirm(`"${p.name}" 삭제하시겠습니까?`, ()=>{
+    list.splice(_simpleEditIdx, 1);
+    _saveSimplePresets(_simpleCurrentType, list);
+    closeSimplePresetAdd();
+    renderSimplePresetList();
+    toast('삭제됨', 'ok');
+  });
+}
+
+function applySimplePreset(idx){
+  if(!_simpleCurrentType || _simpleCurrentType === 'cpp') return;
+  const list = _getSimplePresets(_simpleCurrentType);
+  const p = list[idx];
+  if(!p) return;
+  const tid = SIMPLE_PRESET_TYPES[_simpleCurrentType].target;
+  const ta = document.getElementById(tid);
+  if(!ta) return;
+  const current = (ta.value||'').trim();
+  const doOverwrite = ()=>{
+    ta.value = p.prompt||'';
+    ta.dispatchEvent(new Event('input'));
+    closeSimplePresetModal();
+    toast(`"${p.name}" 적용됨`, 'ok');
+  };
+  const doAppend = ()=>{
+    const sep = current && !current.endsWith(',') ? ', ' : ' ';
+    ta.value = current + sep + (p.prompt||'');
+    ta.dispatchEvent(new Event('input'));
+    closeSimplePresetModal();
+    toast(`"${p.name}" 뒤에 추가됨`, 'ok');
+  };
+  if(!current){
+    doOverwrite();
+    return;
+  }
+  // 3 옵션 다이얼로그
+  showOverwriteDlg(`현재 입력 내용이 있습니다. 어떻게 할까요?`, [
+    {label:'🔄 덮어쓰기', className:'btn-acc', cb:doOverwrite},
+    {label:'➕ 뒤에 추가', className:'btn-ghost', cb:doAppend},
+    {label:'취소', className:'btn-ghost', cb:()=>{}}
+  ]);
+}
+
+function applySimpleCppToSlot(idx, slotIdx){
+  const list = _getSimplePresets('cpp');
+  const p = list[idx];
+  if(!p) return;
+  if(slotIdx < 0 || slotIdx >= chars.length) return;
+  const applyIt = (mode)=>{
+    const cur = (chars[slotIdx].prompt||'').trim();
+    let next;
+    if(mode === 'append' && cur){
+      const sep = cur.endsWith(',') ? ' ' : ', ';
+      next = cur + sep + (p.prompt||'');
+    } else {
+      next = p.prompt||'';
+    }
+    chars[slotIdx].prompt = next;
+    chars[slotIdx].enabled = true;
+    const ta = _charEl('cp'+slotIdx);
+    if(ta){ ta.value = next; ta.dispatchEvent(new Event('input')); }
+    applyCharsToUI();
+    saveSettings();
+    closeSimplePresetModal();
+    toast(`C${slotIdx+1}에 "${p.name}" 적용`, 'ok');
+  };
+  const cur = (chars[slotIdx].prompt||'').trim();
+  if(!cur){ applyIt('overwrite'); return; }
+  showOverwriteDlg(`C${slotIdx+1}에 기존 내용이 있습니다. 어떻게 할까요?`, [
+    {label:'🔄 덮어쓰기', className:'btn-acc', cb:()=>applyIt('overwrite')},
+    {label:'➕ 뒤에 추가', className:'btn-ghost', cb:()=>applyIt('append')},
+    {label:'취소', className:'btn-ghost', cb:()=>{}}
+  ]);
+}
+
+function deleteSimplePreset(idx){
+  if(!_simpleCurrentType) return;
+  const list = _getSimplePresets(_simpleCurrentType);
+  const p = list[idx];
+  if(!p) return;
+  showConfirm(`"${p.name}" 삭제하시겠습니까?`, ()=>{
+    list.splice(idx, 1);
+    _saveSimplePresets(_simpleCurrentType, list);
+    renderSimplePresetList();
+    toast('삭제됨', 'ok');
+  });
 }
 function closePresetModal(){
   document.getElementById('presetModal').classList.remove('open');
@@ -7727,6 +8123,8 @@ _attachHdrSwipeClose('charSlotPickerHdr', 'charSlotPickerBox',    closeQCharsSlo
 _attachHdrSwipeClose('outfitSlotPickerHdr','outfitSlotPickerBox', closeQOutfitsSlotPicker);
 _attachHdrSwipeClose('cpAddModalHdr', 'cpAddModalBox', closeCpAddModal);
 _attachHdrSwipeClose('dataManageHdr', 'dataManageBox', closeDataManage);
+_attachHdrSwipeClose('simplePresetHdr', 'simplePresetModalBox', closeSimplePresetModal);
+_attachHdrSwipeClose('simplePresetAddHdr', 'simplePresetAddBox', closeSimplePresetAdd);
 
 function cpThumbFromFile(inp){
   const tab = inp.dataset.tab || 'char';
@@ -9810,30 +10208,29 @@ function setUiScale(val){ if(isMobile()) return;
   const cpThumbSz = Math.round(Math.min(96, 44 * scale));
   document.documentElement.style.setProperty('--cp-thumb-sz', cpThumbSz + 'px');
 
-  // ── app-root 밖 모달들에 동일한 scale 적용 ──
-  // (position:fixed;inset:0 풀스크린 오버레이 모달만 — delayPanel/tagAcDrop 제외)
-  const OUTER_MODALS = [
-    'styleImgViewer','presetModal','sessionModal','sesExportModal',
-    'charPresetModal',
-    'cpAddModal','cpThumbViewer','cpGalleryPicker','slotPicker',
-    'charStatusModal','outfitStatusModal',
-    'outfitSlotPicker','charSlotPicker',
-    'overwriteDlg','dataManageModal','confirmDlg'
+  // ── app-root 밖 모달들: 박스 크기를 뷰포트에 맞춤 (확대로 인한 넘침 방지) ──
+  // 모달 오버레이(position:fixed inset:0)는 뷰포트 전체를 덮는데,
+  // 내부 박스가 80vh/500px 기준이라 스케일 확대되면 뷰포트 밖으로 나감.
+  // 박스의 max-width/max-height를 역보정해서 뷰포트 안에 수납.
+  const OUTER_MODAL_BOXES = [
+    'styleImgViewerBox','presetModalBox','sessionModalBox','sesExportModalBox',
+    'charPresetModalBox','cpAddModalBox','cpThumbViewerBox',
+    'cpGalleryPickerBox','slotPickerBox',
+    'charStatusBox','outfitStatusBox',
+    'outfitSlotPickerBox','charSlotPickerBox',
+    'overwriteDlgBox','dataManageBox','confirmDlgBox',
+    'simplePresetModalBox','simplePresetAddBox'
   ];
-  const wPct = (100 / scale).toFixed(4);
-  OUTER_MODALS.forEach(id => {
-    const m = document.getElementById(id);
-    if(!m) return;
+  OUTER_MODAL_BOXES.forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
     if(scale === 1){
-      m.style.transform = '';
-      m.style.width     = '';
-      m.style.height    = '';
-      m.style.transformOrigin = '';
+      el.style.maxWidth = '';
+      el.style.maxHeight = '';
     } else {
-      m.style.transformOrigin = '0px 0px';
-      m.style.transform       = `scale(${scale})`;
-      m.style.width           = wPct + 'vw';
-      m.style.height          = wPct + 'vh';
+      // scale > 1 이면 박스를 작게 → 화면을 안 넘어감
+      el.style.maxWidth  = `${Math.floor(94 / scale)}vw`;
+      el.style.maxHeight = `${Math.floor(88 / scale)}vh`;
     }
   });
 
