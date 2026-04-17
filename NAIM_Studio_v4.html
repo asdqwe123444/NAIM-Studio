@@ -1274,7 +1274,7 @@ img {
   /* 세로모드: center 모달 box max-height도 nav bar 높이만큼 감소 */
   #sessionModalBox{max-height:calc(80vh - var(--mob-bars-h, 110px));}
   #sesExportModalBox{max-height:calc(85vh - var(--mob-bars-h, 110px));}
-  #styleModalBox{max-height:calc(88vh - var(--mob-bars-h, 110px));}
+  #styleModalBox{height:calc(88vh - var(--mob-bars-h, 110px));max-height:calc(88vh - var(--mob-bars-h, 110px));}
   #exifModalBox{max-height:calc(70vh - var(--mob-bars-h, 110px));}
   /* 세로모드 갤러리 아이템: 다운로드 버튼 숨김, 시드 아이콘만 표시 */
   .g-dl{display:none!important;}
@@ -5630,6 +5630,12 @@ function loadSettings(){
     saveSettings._loading = false;
     // 복원 완료 후 최종 상태 저장 (타이밍 문제 방지)
     setTimeout(()=>saveSettings(), 0);
+    // PWA면 무조건 전체창 모드 ON
+    if(isPWA()){
+      document.body.classList.add('is-fullscreen');
+      const t = document.getElementById('fullscreenToggle');
+      if(t) t.checked = true;
+    }
   }
 }
 function _loadSettingsInner(){
