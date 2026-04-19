@@ -522,6 +522,12 @@ input[type=checkbox]{accent-color:var(--acc);width:14px;height:14px;cursor:point
 
 /* 단축키 도움말 */
 .kbd{display:inline-flex;align-items:center;justify-content:center;padding:2px 8px;font-family:var(--mono);font-size:11px;background:var(--card2);border:1px solid var(--b2);border-bottom-width:2px;border-radius:3px;color:var(--t1);min-width:36px;white-space:nowrap;}
+
+/* 모바일 제스처 그리드 — 2열 grid: kbd 너비 자동(컨텐츠에 맞게), 설명 나머지 */
+.gesture-grid-mob{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center;}
+.gesture-grid-mob>.kbd{justify-self:start;white-space:nowrap;width:auto;min-width:0;padding:3px 10px;font-size:11px;}
+.gesture-grid-mob>.kbd+span{font-size:12px;color:var(--t2);line-height:1.4;}
+
 #shortcutsModal.open{opacity:1!important;pointer-events:all!important;}
 
 /* 인라인 도움말 버튼 (필요한 곳에 배치, 설정에서 일괄 숨김 가능) */
@@ -2088,7 +2094,7 @@ img {
 
       <div class="mob-only">
       <div style="font-size:11px;font-weight:700;color:var(--acc);letter-spacing:.1em;margin-bottom:6px;">■ 모바일 제스처 — 공통</div>
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 12px;margin-bottom:14px;">
+      <div class="gesture-grid-mob" style="margin-bottom:14px;">
         <kbd class="kbd">좌우 스와이프</kbd><span>창 닫기 (대부분 창)</span>
         <kbd class="kbd">상단 바 아래로</kbd><span>창 닫기 (헤더 영역 끌어내리기)</span>
         <kbd class="kbd">바깥 영역 탭</kbd><span>창 닫기 (투어·모달 공통)</span>
@@ -2097,7 +2103,7 @@ img {
       </div>
 
       <div style="font-size:11px;font-weight:700;color:var(--acc);letter-spacing:.1em;margin-bottom:6px;">■ 갤러리 제스처</div>
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 12px;margin-bottom:14px;">
+      <div class="gesture-grid-mob" style="margin-bottom:14px;">
         <kbd class="kbd">이미지 더블탭</kbd><span>라이트박스 (크게 보기) 열기</span>
         <kbd class="kbd">이미지 꾸욱</kbd><span>선택 모드 진입 · 체크 토글</span>
         <kbd class="kbd">꾸욱 + 드래그</kbd><span>여러 이미지 동시 선택</span>
@@ -2105,14 +2111,14 @@ img {
       </div>
 
       <div style="font-size:11px;font-weight:700;color:var(--acc);letter-spacing:.1em;margin-bottom:6px;">■ 라이트박스</div>
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 12px;margin-bottom:14px;">
+      <div class="gesture-grid-mob" style="margin-bottom:14px;">
         <kbd class="kbd">좌 / 우 탭</kbd><span>이전 / 다음 이미지</span>
         <kbd class="kbd">위로 스와이프</kbd><span>닫기</span>
         <kbd class="kbd">이미지 더블탭</kbd><span>닫기</span>
       </div>
 
       <div style="font-size:11px;font-weight:700;color:var(--acc);letter-spacing:.1em;margin-bottom:6px;">■ 기타</div>
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px 12px;margin-bottom:14px;">
+      <div class="gesture-grid-mob" style="margin-bottom:14px;">
         <kbd class="kbd">캐릭 슬롯 꾸욱</kbd><span>슬롯 적용 해제</span>
         <kbd class="kbd">매크로 꾸욱</kbd><span>매크로 제거 (편집 창 삽입 버튼)</span>
         <kbd class="kbd">대기열 핸들 위로</kbd><span>대기열 열기 (하단 생성바 위 손잡이)</span>
@@ -5262,9 +5268,19 @@ function _tourRestoreSnapshot(){
     const qa = document.getElementById('quickAddModal');
     if(qa){
       qa.classList.remove('tour-elevated');
-      const isOpen = (qa.style.pointerEvents === 'all');
-      if(s.quickAddOpen !== undefined && isOpen && !s.quickAddOpen){
-        if(typeof closeQuickAddModal === 'function') closeQuickAddModal();
+      // 투어 중 disabled 했던 input 원복
+      const inp = document.getElementById('quickAddInp');
+      if(inp) inp.disabled = false;
+      // 투어가 직접 띄운 것이면 조용히 숨기기 (closeQuickAddModal 리스너 경로 안 탐)
+      if(qa.dataset.tourMock === '1'){
+        qa.style.opacity = '0';
+        qa.style.pointerEvents = 'none';
+        delete qa.dataset.tourMock;
+      } else {
+        const isOpen = (qa.style.pointerEvents === 'all');
+        if(s.quickAddOpen !== undefined && isOpen && !s.quickAddOpen){
+          if(typeof closeQuickAddModal === 'function') closeQuickAddModal();
+        }
       }
     }
   }catch{}
@@ -5862,8 +5878,23 @@ const _TA_MODAL_TOUR_STEPS = [
     placement: 'bottom',
     before: ()=>{
       try{
-        if(typeof openQuickAddModal === 'function') openQuickAddModal();
-        document.getElementById('quickAddModal')?.classList.add('tour-elevated');
+        // 투어 전용: 함수 호출 없이 모달만 시각적으로 띄움 (focus·리스너 없음)
+        const modal = document.getElementById('quickAddModal');
+        if(modal){
+          modal.dataset.tourMock = '1';  // 투어가 띄운 것 표시
+          modal.style.alignItems = 'center';
+          modal.style.paddingBottom = '';
+          modal.style.opacity = '1';
+          modal.style.pointerEvents = 'all';
+          modal.classList.add('tour-elevated');
+          // input 비활성화 — 모바일 키보드 차단
+          const inp = document.getElementById('quickAddInp');
+          if(inp){ inp.disabled = true; inp.blur(); }
+        }
+        // 혹시 이미 포커스 갔으면 강제로 해제
+        if(document.activeElement && document.activeElement.blur){
+          document.activeElement.blur();
+        }
         setTimeout(()=>{ try{ _tourReposition(); }catch{} }, 200);
       }catch{}
     }
@@ -5874,14 +5905,20 @@ const _TA_MODAL_TOUR_STEPS = [
     text: '저장된 매크로 버튼을 꾸욱 누르면 제거할 수 있습니다.',
     placement: 'bottom',
     before: ()=>{
-      // 매크로 추가 창 닫기
+      // 매크로 추가 창 닫기 (투어 전용으로 띄운 것)
       try{
-        const add = document.getElementById('quickAddModal');
-        if(add){
-          add.classList.remove('tour-elevated');
-          if(typeof closeQuickAddModal === 'function') closeQuickAddModal();
+        const modal = document.getElementById('quickAddModal');
+        if(modal){
+          modal.classList.remove('tour-elevated');
+          if(modal.dataset.tourMock === '1'){
+            modal.style.opacity = '0';
+            modal.style.pointerEvents = 'none';
+            delete modal.dataset.tourMock;
+          }
+          // input disabled 해제
+          const inp = document.getElementById('quickAddInp');
+          if(inp) inp.disabled = false;
         }
-        // 닫힘 애니메이션 끝난 후 풍선 위치 재계산
         setTimeout(()=>{ try{ _tourReposition(); }catch{} }, 250);
       }catch{}
     }
